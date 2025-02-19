@@ -36,6 +36,58 @@ def OnMult(m_ar : int, m_br : int) -> None:
 
     for i in range(0, min(10,m_br)):
         print(phc[i])
-    
 
-OnMult(1000, 1000)
+def OnMultLine(m_ar, m_br):
+    '''
+    Line x line matriz multiplication
+    '''
+    return None
+
+def OnMultBlock(m_ar, m_br, bksize) :
+    return None
+
+def main() : 
+    while True :
+        print("1. Multiplication")
+        print("2. Line Multiplication")
+        print("3. Block Multiplication")
+        print("4. Exit")
+
+        op = input("Selection?: ")
+        try:
+            op = int(op)
+        except ValueError:
+            print("Not a number")
+            continue
+
+        dim = input("Dimensions: lins=cols ?")
+        try:
+            dim = int(dim)
+        except ValueError:
+            print("Not a number")
+            continue
+
+        if op == 1 :
+            OnMult(dim,dim)
+
+        elif op == 2 :
+            OnMultLine(dim,dim)
+
+        elif op == 3:
+            blockSize = input("Block Size?")
+            try:
+                blockSize = int(blockSize)
+            except ValueError:
+                print("Not a number")
+                continue
+            OnMultBlock(dim,dim)
+        
+        elif op == 4:
+            # Exits the program
+            return
+
+        else:
+            print("Invalid Option. Try again.")
+
+if __name__ == "__main__":
+    main()
