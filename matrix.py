@@ -48,23 +48,23 @@ def OnMultBlock(m_ar, m_br, bksize) :
 
 def main() : 
     while True :
-        print("1. Multiplication")
+        print("\n1. Multiplication")
         print("2. Line Multiplication")
         print("3. Block Multiplication")
-        print("4. Exit")
+        print("4. Exit\n")
 
         op = input("Selection?: ")
         try:
             op = int(op)
         except ValueError:
-            print("Not a number")
+            print("Not a number\n")
             continue
 
-        dim = input("Dimensions: lins=cols ?")
+        dim = input("\nDimensions: lins=cols ?")
         try:
             dim = int(dim)
         except ValueError:
-            print("Not a number")
+            print("Not a number\n")
             continue
 
         if op == 1 :
@@ -74,11 +74,11 @@ def main() :
             OnMultLine(dim,dim)
 
         elif op == 3:
-            blockSize = input("Block Size?")
+            blockSize = input("\nBlock Size?")
             try:
                 blockSize = int(blockSize)
             except ValueError:
-                print("Not a number")
+                print("Not a number\n")
                 continue
             OnMultBlock(dim,dim)
         
@@ -87,7 +87,7 @@ def main() :
             return
 
         else:
-            print("Invalid Option. Try again.")
+            print("Invalid Option. Try again.\n")
 
 if __name__ == "__main__":
     main()
