@@ -4,14 +4,14 @@
 #include <time.h>
 #include <cstdlib>
 #include <papi.h>
+#include <algorithm>
 
 using namespace std;
 
 #define SYSTEMTIME clock_t
 
  
-void OnMult(int m_ar, int m_br) 
-{
+void OnMult(int m_ar, int m_br) {
 	
 	SYSTEMTIME Time1, Time2;
 	
@@ -20,44 +20,40 @@ void OnMult(int m_ar, int m_br)
 	int i, j, k;
 
 	double *pha, *phb, *phc;
-	
-
 		
-    pha = (double *)malloc((m_ar * m_ar) * sizeof(double));
-	phb = (double *)malloc((m_ar * m_ar) * sizeof(double));
-	phc = (double *)malloc((m_ar * m_ar) * sizeof(double));
+	pha = new double[m_ar * m_ar];
+	phb = new double[m_ar * m_ar];
+	phc = new double[m_ar * m_ar];
 
-	for(i=0; i<m_ar; i++)
-		for(j=0; j<m_ar; j++)
-			pha[i*m_ar + j] = (double)1.0;
+	for(i = 0; i < m_ar; i++)
+		for(j = 0; j < m_ar; j++)
+			pha[i * m_ar + j] = (double)1.0;
 
 
 
-	for(i=0; i<m_br; i++)
-		for(j=0; j<m_br; j++)
-			phb[i*m_br + j] = (double)(i+1);
+	for(i = 0; i < m_br; i++)
+		for(j = 0; j < m_br; j++)
+			phb[i * m_br + j] = (double)(i+1);
 
 
 
     Time1 = clock();
 
-	for(i=0; i<m_ar; i++)
-	{	for( j=0; j<m_br; j++)
-		{	temp = 0;
-			for( k=0; k<m_ar; k++)
-			{	
-				temp += pha[i*m_ar+k] * phb[k*m_br+j];
+	for(i=0; i < m_ar; i++) {	
+		for(j = 0; j < m_br; j++) {
+			temp = 0;
+			for(k = 0; k < m_ar; k++) {	
+				temp += pha[i * m_ar + k] * phb[k * m_br + j];
 			}
-			phc[i*m_ar+j]=temp;
+			phc[i * m_ar +j] = temp;
 		}
 	}
 
 
     Time2 = clock();
-	sprintf(st, "Time: %3.3f seconds\n", (double)(Time2 - Time1) / CLOCKS_PER_SEC);
-	cout << st;
+	cout << "Time: " << fixed << setprecision(3) << (double)(Time2 - Time1) / CLOCKS_PER_SEC << " seconds" << endl;
 
-	// display 10 elements of the result matrix tto verify correctness
+	// display 10 elements of the result matrix to verify correctness
 	cout << "Result matrix: " << endl;
 	for(i=0; i<1; i++)
 	{	for(j=0; j<min(10,m_br); j++)
@@ -65,16 +61,15 @@ void OnMult(int m_ar, int m_br)
 	}
 	cout << endl;
 
-    free(pha);
-    free(phb);
-    free(phc);
+	delete[] pha;
+	delete[] phb;
+	delete[] phc;
 	
 	
 }
 
 // add code here for line x line matriz multiplication
-void OnMultLine(int m_ar, int m_br)
-{
+void OnMultLine(int m_ar, int m_br) {
 	SYSTEMTIME Time1, Time2;
 	
 	char st[100];
@@ -89,27 +84,23 @@ void OnMultLine(int m_ar, int m_br)
 	phb = (double *)malloc((m_ar * m_ar) * sizeof(double));
 	phc = (double *)malloc((m_ar * m_ar) * sizeof(double));
 
-	for(i=0; i<m_ar; i++)
-		for(j=0; j<m_ar; j++)
-			pha[i*m_ar + j] = (double)1.0;
+	for(i = 0; i < m_ar; i++)
+		for(j = 0; j < m_ar; j++)
+			pha[i * m_ar + j] = (double)1.0;
 
 
 
-	for(i=0; i<m_br; i++)
-		for(j=0; j<m_br; j++)
-			phb[i*m_br + j] = (double)(i+1);
-
-
+	for(i = 0; i < m_br; i++)
+		for(j = 0; j < m_br; j++)
+			phb[i * m_br + j] = (double)(i+1);
 
     Time1 = clock();
 
-	for(i=0; i<m_ar; i++)
-	{	for( j=0; j<m_br; j++)
-		{
-			for( k=0; k<m_ar; k++)
-			{	
+	for(i = 0; i < m_ar; i++) {
+		for(j = 0; j < m_br; j++) {
+			for(k = 0; k < m_ar; k++) {
 				//line by line multiplication (ex: A[1][1] multiplies by B[1][1], B[1][2], ....)
-				phc[i*m_ar+k] += pha[i*m_ar+j] * phb[j*m_br+k];
+				phc[i * m_ar + k] += pha[i * m_ar + j] * phb[j * m_br + k];
 			}
 		}
 	}
@@ -119,11 +110,11 @@ void OnMultLine(int m_ar, int m_br)
 	sprintf(st, "Time: %3.3f seconds\n", (double)(Time2 - Time1) / CLOCKS_PER_SEC);
 	cout << st;
 
-	// display 10 elements of the result matrix tto verify correctness
+	// display 10 elements of the result matrix to verify correctness
 	cout << "Result matrix: " << endl;
-	for(i=0; i<1; i++)
-	{	for(j=0; j<min(10,m_br); j++)
-			cout << phc[j] << " ";
+	for(i = 0; i < 1; i++) {
+		for(j = 0; j < min(10, m_br); j++)
+		cout << phc[j] << " ";
 	}
 	cout << endl;
 
@@ -135,17 +126,15 @@ void OnMultLine(int m_ar, int m_br)
     
 }
 
-// add code here for block x block matriz multiplication
-void OnMultBlock(int m_ar, int m_br, int bkSize)
-{
+// add code here for block x block matrix multiplication
+void OnMultBlock(int m_ar, int m_br, int bkSize) {
     
     
 }
 
 
 
-void handle_error (int retval)
-{
+void handle_error (int retval) {
   printf("PAPI error %d: %s\n", retval, PAPI_strerror(retval));
   exit(1);
 }
@@ -164,8 +153,7 @@ void init_papi() {
 }
 
 
-int main (int argc, char *argv[])
-{
+int main (int argc, char *argv[]) {
 
 	char c;
 	int lin, col, blockSize;
@@ -228,8 +216,8 @@ int main (int argc, char *argv[])
 
   		ret = PAPI_stop(EventSet, values);
   		if (ret != PAPI_OK) cout << "ERROR: Stop PAPI" << endl;
-  		printf("L1 DCM: %lld \n",values[0]);
-  		printf("L2 DCM: %lld \n",values[1]);
+		cout << "L1 DCM: " << values[0] << endl;
+		cout << "L2 DCM: " << values[1] << endl;
 
 		ret = PAPI_reset( EventSet );
 		if ( ret != PAPI_OK )

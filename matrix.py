@@ -68,6 +68,10 @@ def main() :
             print("Not a number\n")
             continue
 
+        if op == 4:
+            # Exits the program
+            return
+
         dim = input("\nDimensions: lins=cols ?")
         try:
             dim = int(dim)
@@ -89,10 +93,6 @@ def main() :
                 print("Not a number\n")
                 continue
             OnMultBlock(dim,dim)
-        
-        elif op == 4:
-            # Exits the program
-            return
 
         else:
             print("Invalid Option. Try again.\n")
