@@ -128,8 +128,57 @@ void OnMultLine(int m_ar, int m_br) {
 
 // add code here for block x block matrix multiplication
 void OnMultBlock(int m_ar, int m_br, int bkSize) {
-    
-    
+    SYSTEMTIME Time1, Time2;
+	
+	char st[100];
+	double temp;
+	int i, j, k, ii, jj, kk;
+
+	double *pha, *phb, *phc;
+		
+	pha = new double[m_ar * m_ar];
+	phb = new double[m_ar * m_ar];
+	phc = new double[m_ar * m_ar];
+
+	for(i = 0; i < m_ar; i++)
+		for(j = 0; j < m_ar; j++)
+			pha[i * m_ar + j] = (double)1.0;
+
+	for(i = 0; i < m_br; i++)
+		for(j = 0; j < m_br; j++)
+			phb[i * m_br + j] = (double)(i+1);
+
+	Time1 = clock();
+
+	for(i = 0; i < m_ar; i+=bkSize) {
+		for(j = 0; j < m_br; j+=bkSize) {
+			for(k = 0; k < m_ar; k+=bkSize) {
+				for (ii = i; ii < min(i + bkSize, m_br) ; ii++){
+					for (jj = j; jj < min(j + bkSize, m_br); jj++){
+						for(kk = k ; kk < min(k + bkSize, m_br); kk++){
+							//block by block multiplication (ex: A11 * B11 + A12 * B21)
+							phc[ii * m_ar + jj] += pha[ii * m_ar + kk] * phb[kk * m_br + jj];
+						}
+					}
+				}
+			}
+		}
+	}
+
+    Time2 = clock();
+	cout << "Time: " << fixed << setprecision(3) << (double)(Time2 - Time1) / CLOCKS_PER_SEC << " seconds" << endl;
+
+	// display 10 elements of the result matrix to verify correctness
+	cout << "Result matrix: " << endl;
+	for(i=0; i<1; i++)
+	{	for(j=0; j<min(10,m_br); j++)
+			cout << phc[j] << " ";
+	}
+	cout << endl;
+
+	delete[] pha;
+	delete[] phb;
+	delete[] phc;
 }
 
 
