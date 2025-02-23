@@ -25,9 +25,9 @@ def OnMult(m_ar : int, m_br : int) -> None:
     for i in range(0, min(10,m_br)):
         print(phc[i])
 
-def OnMultLine(m_ar, m_br):
+def OnMultLine(m_ar : int, m_br : int) -> None:
     '''
-    Line x line matriz multiplication
+    Line x line matrix multiplication
     '''
 
     pha = [1.0 for i in range(m_ar) for j in range(m_ar)]
@@ -51,7 +51,33 @@ def OnMultLine(m_ar, m_br):
         print(phc[i])
     return None
 
-def OnMultBlock(m_ar, m_br, bksize) :
+def OnMultBlock(m_ar : int, m_br : int, bksize : int)  -> None:
+    '''
+    Block x Block matrix multiplication
+    '''
+
+    pha = [1.0 for i in range(m_ar) for j in range(m_ar)]
+    phb = [i + 1 for i in range(m_br) for j in range(m_br)]
+    phc = [0 for i in range(m_ar) for j in range(m_ar)]
+    
+    time1 = time.time()
+
+    for i in range(0, m_ar, bksize):
+        for j in range(0, m_br, bksize):
+            for k in range(0, m_ar, bksize):
+                for ii in range(i, min(i + bksize, m_br)):
+                    for jj in range(j, min(j + bksize, m_br)):
+                        for kk in range(k, min(k + bksize, m_br)):
+                            phc[ii * m_ar + kk] += pha[ii*m_ar + jj] * phb[jj*m_br + kk]
+    
+    time2 = time.time()
+
+    final = time2 - time1
+
+    print(f'Final Time is {final}')
+
+    for i in range(0, min(10,m_br)):
+        print(phc[i])
     return None
 
 def main() : 
@@ -72,7 +98,7 @@ def main() :
             # Exits the program
             return
 
-        dim = input("\nDimensions: lins=cols ?")
+        dim = input("\nDimensions: lins=cols? ")
         try:
             dim = int(dim)
         except ValueError:
@@ -86,13 +112,13 @@ def main() :
             OnMultLine(dim,dim)
 
         elif op == 3:
-            blockSize = input("\nBlock Size?")
+            blockSize = input("\nBlock Size? ")
             try:
                 blockSize = int(blockSize)
             except ValueError:
                 print("Not a number\n")
                 continue
-            OnMultBlock(dim,dim)
+            OnMultBlock(dim,dim, blockSize)
 
         else:
             print("Invalid Option. Try again.\n")

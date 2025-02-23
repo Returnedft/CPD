@@ -156,8 +156,8 @@ void OnMultBlock(int m_ar, int m_br, int bkSize) {
 				for (ii = i; ii < min(i + bkSize, m_br) ; ii++){
 					for (jj = j; jj < min(j + bkSize, m_br); jj++){
 						for(kk = k ; kk < min(k + bkSize, m_br); kk++){
-							//block by block multiplication (ex: A11 * B11 + A12 * B21)
-							phc[ii * m_ar + jj] += pha[ii * m_ar + kk] * phb[kk * m_br + jj];
+							//block by block multiplication using line mult
+							phc[ii * m_ar + kk] += pha[ii * m_ar + jj] * phb[jj * m_br + kk];
 						}
 					}
 				}
