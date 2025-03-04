@@ -4,7 +4,9 @@
 #include <time.h>
 #include <cstdlib>
 #include <papi.h>
+#include <omp.h>
 #include <algorithm>
+
 
 using namespace std;
 
@@ -51,15 +53,15 @@ void OnMult(int m_ar, int m_br) {
 
 
     Time2 = clock();
-	cout << "Time: " << fixed << setprecision(3) << (double)(Time2 - Time1) / CLOCKS_PER_SEC << " seconds" << endl;
+	std::cout << "Time: " << fixed << setprecision(3) << (double)(Time2 - Time1) / CLOCKS_PER_SEC << " seconds" << endl;
 
 	// display 10 elements of the result matrix to verify correctness
-	cout << "Result matrix: " << endl;
+	std::cout << "Result matrix: " << endl;
 	for(i=0; i<1; i++)
 	{	for(j=0; j<min(10,m_br); j++)
-			cout << phc[j] << " ";
+			std::cout << phc[j] << " ";
 	}
-	cout << endl;
+	std::cout << endl;
 
 	delete[] pha;
 	delete[] phb;
@@ -108,15 +110,15 @@ void OnMultLine(int m_ar, int m_br) {
 
     Time2 = clock();
 	sprintf(st, "Time: %3.3f seconds\n", (double)(Time2 - Time1) / CLOCKS_PER_SEC);
-	cout << st;
+	std::cout << st;
 
 	// display 10 elements of the result matrix to verify correctness
-	cout << "Result matrix: " << endl;
+	std::cout << "Result matrix: " << endl;
 	for(i = 0; i < 1; i++) {
 		for(j = 0; j < min(10, m_br); j++)
-		cout << phc[j] << " ";
+		std::cout << phc[j] << " ";
 	}
-	cout << endl;
+	std::cout << endl;
 
     free(pha);
     free(phb);
@@ -166,10 +168,68 @@ void OnMultBlock(int m_ar, int m_br, int bkSize) {
 	}
 
     Time2 = clock();
-	cout << "Time: " << fixed << setprecision(3) << (double)(Time2 - Time1) / CLOCKS_PER_SEC << " seconds" << endl;
+	std::cout << "Time: " << fixed << setprecision(3) << (double)(Time2 - Time1) / CLOCKS_PER_SEC << " seconds" << endl;
 
 	// display 10 elements of the result matrix to verify correctness
-	cout << "Result matrix: " << endl;
+	std::cout << "Result matrix: " << endl;
+	for(i=0; i<1; i++)
+	{	for(j=0; j<min(10,m_br); j++)
+			std::cout << phc[j] << " ";
+	}
+	std::cout << endl;
+
+	delete[] pha;
+	delete[] phb;
+	delete[] phc;
+}
+
+void OnMultParallel1(int m_ar, int m_br) {
+
+	double Time1, Time2;
+	
+	char st[100];
+	double temp;
+	int i, j, k;
+
+	double *pha, *phb, *phc;
+		
+	pha = new double[m_ar * m_ar];
+	phb = new double[m_ar * m_ar];
+	phc = new double[m_ar * m_ar];
+
+	for(i = 0; i < m_ar; i++)
+		for(j = 0; j < m_ar; j++)
+			pha[i * m_ar + j] = (double)1.0;
+
+
+
+	for(i = 0; i < m_br; i++)
+		for(j = 0; j < m_br; j++)
+			phb[i * m_br + j] = (double)(i+1);
+
+
+
+
+	#pragma omp parallel shared(Time1,Time2, phc, pha,phb)
+	{
+		Time1 = omp_get_wtime();
+		#pragma omp for
+		for(i=0; i < m_ar; i++) {	
+			for(j = 0; j < m_br; j++) {
+				temp = 0;
+				for(k = 0; k < m_ar; k++) {	
+					temp += pha[i * m_ar + k] * phb[k * m_br + j];
+				}
+				phc[i * m_ar +j] = temp;
+			}
+		}
+		Time2 = omp_get_wtime();
+	}
+	
+	cout << "Time: " << fixed << setprecision(3) << Time2 - Time1 << " seconds" << endl;
+
+	// display 10 elements of the result matrix to verify correctness
+	std::cout << "Result matrix: " << endl;
 	for(i=0; i<1; i++)
 	{	for(j=0; j<min(10,m_br); j++)
 			cout << phc[j] << " ";
@@ -179,8 +239,182 @@ void OnMultBlock(int m_ar, int m_br, int bkSize) {
 	delete[] pha;
 	delete[] phb;
 	delete[] phc;
+
 }
 
+void OnMultParallel2(int m_ar, int m_br) {
+
+	double Time1, Time2;
+	
+	char st[100];
+	double temp;
+	int i, j, k;
+
+	double *pha, *phb, *phc;
+		
+	pha = new double[m_ar * m_ar];
+	phb = new double[m_ar * m_ar];
+	phc = new double[m_ar * m_ar];
+
+	for(i = 0; i < m_ar; i++)
+		for(j = 0; j < m_ar; j++)
+			pha[i * m_ar + j] = (double)1.0;
+
+
+
+	for(i = 0; i < m_br; i++)
+		for(j = 0; j < m_br; j++)
+			phb[i * m_br + j] = (double)(i+1);
+
+
+	#pragma omp parallel shared(Time1,Time2, phc, pha,phb) private(i,j,k)
+	{
+		Time1 = omp_get_wtime();
+		for(i=0; i < m_ar; i++) {	
+			for(j = 0; j < m_br; j++) {
+				#pragma omp for
+				for(k = 0; k < m_ar; k++) {	
+					phc[i * m_ar +j]  += pha[i * m_ar + k] * phb[k * m_br + j];
+					
+				}
+			}
+		}
+		Time2 = omp_get_wtime();
+	}
+	
+	cout << "Time: " << fixed << setprecision(3) << Time2 - Time1 << " seconds" << endl;
+
+	// display 10 elements of the result matrix to verify correctness
+	std::cout << "Result matrix: " << endl;
+	for(i=0; i<1; i++)
+	{	for(j=0; j<min(10,m_br); j++)
+			cout << phc[j] << " ";
+	}
+	cout << endl;
+
+	delete[] pha;
+	delete[] phb;
+	delete[] phc;
+
+}
+
+void OnMultLineParallel1(int m_ar, int m_br){
+	double Time1, Time2;
+	
+	char st[100];
+	double temp;
+	int i, j, k;
+
+	double *pha, *phb, *phc;
+	
+
+		
+    pha = (double *)malloc((m_ar * m_ar) * sizeof(double));
+	phb = (double *)malloc((m_ar * m_ar) * sizeof(double));
+	phc = (double *)malloc((m_ar * m_ar) * sizeof(double));
+
+	for(i = 0; i < m_ar; i++)
+		for(j = 0; j < m_ar; j++)
+			pha[i * m_ar + j] = (double)1.0;
+
+
+
+	for(i = 0; i < m_br; i++)
+		for(j = 0; j < m_br; j++)
+			phb[i * m_br + j] = (double)(i+1);
+
+	#pragma omp parallel
+	{	
+		Time1 = omp_get_wtime();
+		#pragma omp for
+		for(i = 0; i < m_ar; i++) {
+			for(j = 0; j < m_br; j++) {
+				for(k = 0; k < m_ar; k++) {
+					//line by line multiplication (ex: A[1][1] multiplies by B[1][1], B[1][2], ....)
+					phc[i * m_ar + k] += pha[i * m_ar + j] * phb[j * m_br + k];
+				}
+			}
+		}
+		Time2 = omp_get_wtime(); 
+	}
+
+
+	sprintf(st, "Time: %3.3f seconds\n", Time2 - Time1);
+	std::cout << st;
+
+	// display 10 elements of the result matrix to verify correctness
+	std::cout << "Result matrix: " << endl;
+	for(i = 0; i < 1; i++) {
+		for(j = 0; j < min(10, m_br); j++)
+		std::cout << phc[j] << " ";
+	}
+	std::cout << endl;
+
+    free(pha);
+    free(phb);
+    free(phc);
+	
+	 
+} 
+
+void OnMultLineParallel2(int m_ar, int m_br){
+	double Time1, Time2;
+	
+	char st[100];
+	double temp;
+	int i, j, k;
+
+	double *pha, *phb, *phc;
+	
+
+		
+    pha = (double *)malloc((m_ar * m_ar) * sizeof(double));
+	phb = (double *)malloc((m_ar * m_ar) * sizeof(double));
+	phc = (double *)malloc((m_ar * m_ar) * sizeof(double));
+
+	for(i = 0; i < m_ar; i++)
+		for(j = 0; j < m_ar; j++)
+			pha[i * m_ar + j] = (double)1.0;
+
+
+
+	for(i = 0; i < m_br; i++)
+		for(j = 0; j < m_br; j++)
+			phb[i * m_br + j] = (double)(i+1);
+
+	#pragma omp parallel 
+	{	
+		Time1 = omp_get_wtime();
+		for(i = 0; i < m_ar; i++) {
+			for(j = 0; j < m_br; j++) {
+				#pragma omp for
+				for(k = 0; k < m_ar; k++) {
+					//line by line multiplication (ex: A[1][1] multiplies by B[1][1], B[1][2], ....)
+					phc[i * m_ar + k] += pha[i * m_ar + j] * phb[j * m_br + k];
+				}
+			}
+		}
+		Time2 = omp_get_wtime(); 
+	}
+
+
+	sprintf(st, "Time: %3.3f seconds\n", Time2 - Time1);
+	std::cout << st;
+
+	// display 10 elements of the result matrix to verify correctness
+	std::cout << "Result matrix: " << endl;
+	for(i = 0; i < 1; i++) {
+		for(j = 0; j < min(10, m_br); j++)
+		std::cout << phc[j] << " ";
+	}
+	std::cout << endl;
+
+    free(pha);
+    free(phb);
+    free(phc);
+	
+	 
+} 
 
 
 void handle_error (int retval) {
@@ -235,6 +469,10 @@ int main (int argc, char *argv[]) {
 		cout << endl << "1. Multiplication" << endl;
 		cout << "2. Line Multiplication" << endl;
 		cout << "3. Block Multiplication" << endl;
+		cout << "4. Multiplication Parallel Sol1" << endl;
+		cout << "5. Multiplication Parallel Sol2" << endl;
+		cout << "6. Line Multiplication Parallel Sol1" << endl;
+		cout << "7. Line Multiplication Parallel Sol2" << endl;
 		cout << "Selection?: ";
 		cin >>op;
 		if (op == 0)
@@ -259,6 +497,18 @@ int main (int argc, char *argv[]) {
 				cout << "Block Size? ";
 				cin >> blockSize;
 				OnMultBlock(lin, col, blockSize);  
+				break;
+			case 4:
+				OnMultParallel1(lin,col);
+				break;
+			case 5:
+				OnMultParallel2(lin,col);
+				break;
+			case 6:
+				OnMultLineParallel1(lin,col);
+				break;
+			case 7:
+				OnMultLineParallel2(lin,col);
 				break;
 
 		}
